@@ -30,8 +30,18 @@ public class PreviewView extends SurfaceView implements SurfaceHolder.Callback{
 	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 	    //Reset the parameters of the camera:  
 		Parameters params = _camera.getParameters();
-		List<Camera.Size> previewSizes = params.getSupportedPreviewSizes();
-		params.setPreviewSize(320, 240);
+		
+		//Set the preview size on the screen:
+		List<Camera.Size> cameraSizes = params.getSupportedPreviewSizes();
+ 		if(cameraSizes != null && cameraSizes.size() > 0) { 
+			params.setPreviewSize(
+					Math.max(cameraSizes.get(0).width, cameraSizes.get(0).height), 
+					Math.min(cameraSizes.get(0).width, cameraSizes.get(0).height)
+			); 
+		}
+		else
+			params.setPreviewSize(320, 240);	//Should better not go to here!!
+		
 		params.setPictureFormat(PixelFormat.JPEG);
 		_camera.setParameters(params);
 		_camera.startPreview();

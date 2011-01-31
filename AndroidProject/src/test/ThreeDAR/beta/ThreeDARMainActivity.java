@@ -2,6 +2,8 @@ package test.ThreeDAR.beta;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 public class ThreeDARMainActivity extends Activity {
@@ -14,6 +16,12 @@ public class ThreeDARMainActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        //Set the activity to be NO_TITLE and NO_STATUS_BAR:
+        final Window win = getWindow();
+        win.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        
         try{
         	//Setting the _previewView as the main view of the activity:
             _previewView = new PreviewView( this.getApplicationContext() );
