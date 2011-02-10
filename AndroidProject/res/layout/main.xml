@@ -4,9 +4,20 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
-<TextView  
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="@string/hello"
+    
+    <TextView android:id="@+id/sensor_text_view"
+              android:layout_width="fill_parent" 
+    		  android:layout_height="wrap_content" 
+    		  android:text="Orrientation: x:?? , y:??  , z:??  " 
     />
+    
+    <test.ThreeDAR.beta.PreviewView
+    	android:id="@+id/preview_view"
+        android:layout_width="fill_parent"
+    	android:layout_height="fill_parent" 	
+        android:layout_centerVertical="true" 
+        android:layout_centerHorizontal="true"
+    />
+    
+	
 </LinearLayout>

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -18,6 +19,15 @@ public class PreviewView extends SurfaceView implements SurfaceHolder.Callback{
 
 	public PreviewView(Context context) {
 		super(context);
+		_previewHolder = this.getHolder();
+		_previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS); //Not sure what it is...
+		_previewHolder.addCallback(this);
+		
+	}
+	
+	//This constructor is used when the PreviewView is built from an XML resource.
+	public PreviewView(Context context,  AttributeSet attrs) {
+		super(context, attrs);
 		_previewHolder = this.getHolder();
 		_previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS); //Not sure what it is...
 		_previewHolder.addCallback(this);
