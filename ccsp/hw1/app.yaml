@@ -1,0 +1,9 @@
+application: ccsp2001
+version: test
+runtime: python
+api_version: 1
+
+handlers:
+- url: /.*
+  script: main.py
+  login: required

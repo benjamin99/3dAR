@@ -14,8 +14,8 @@ import android.view.SurfaceView;
 // This class defines the custom SurfaceView for previewing images from the camera 
 public class PreviewView extends SurfaceView implements SurfaceHolder.Callback{
 	
-	private Camera 			_camera;
-	private SurfaceHolder 	_previewHolder;
+	protected Camera 			_camera = null;
+	protected SurfaceHolder 	_previewHolder = null;
 
 	public PreviewView(Context context) {
 		super(context);
@@ -60,8 +60,12 @@ public class PreviewView extends SurfaceView implements SurfaceHolder.Callback{
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
+		
 		//Open the camera and set the preview display
-		_camera = Camera.open();
+		if (_camera == null) {
+			_camera = Camera.open();
+		}
+		
 		try {
 			_camera.setPreviewDisplay(_previewHolder);
 		}

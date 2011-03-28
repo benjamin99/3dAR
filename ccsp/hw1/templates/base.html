@@ -1,0 +1,29 @@
+<html>
+	<head>
+		<!-- Import the css files -->
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8">	
+		{% block css %}		
+		{% endblock %}
+		<!-- Import the javascript -->
+		{% block javascripts %}
+		{% endblock %}
+		<!-- Import jQuery Modeule -->
+		
+	</head>
+	
+	<body>
+		<div id=header>
+			{% block header %}
+			{% endblock %}
+		</div>
+		<div id=main-container>
+			{% block main-container %}
+			{% endblock %}
+		</div>
+		<div id=footer>
+			{% block footer %}
+			{% endblock %}
+		</div>
+	</body>
+
+</html>

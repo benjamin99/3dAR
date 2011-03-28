@@ -14,7 +14,7 @@ public final class R {
         public static final int icon=0x7f020000;
     }
     public static final class id {
-        public static final int preview_view=0x7f050001;
+        public static final int front_preview_view=0x7f050001;
         public static final int sensor_text_view=0x7f050000;
     }
     public static final class layout {

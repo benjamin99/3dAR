@@ -10,14 +10,17 @@
     		  android:layout_height="wrap_content" 
     		  android:text="Orrientation: x:?? , y:??  , z:??  " 
     />
-    
-    <test.ThreeDAR.beta.PreviewView
-    	android:id="@+id/preview_view"
-        android:layout_width="fill_parent"
-    	android:layout_height="fill_parent" 	
+
+    <test.ThreeDAR.beta.FrontPreview
+    	android:id="@+id/front_preview_view"
+        android:layout_width="120px"
+    	android:layout_height="90px" 	
         android:layout_centerVertical="true" 
         android:layout_centerHorizontal="true"
     />
+    
+    
+
     
 	
 </LinearLayout>

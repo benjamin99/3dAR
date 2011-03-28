@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block header %}
+	<h2> CCSP Hw1 </h2>
+{% endblock %}
+
+
+{% block main-container %}
+	<a> Hello ~ {{user}} ! </a>
+	<form id=postBox action='/add' method='post'>
+		<!-- Text Box -->
+		<textarea name='text_box' plceholder='Type ur message here!'></textarea>
+		<!-- Post  Button -->
+		<input type='submit' value='Post'>
+		<!-- logout link -->
+		<span id='logout'>
+			<a href={{logout_link}}>logout</a>
+		</span>
+	</form>
+	<div id=msgWall>
+	</div>
+{% endblock %}

@@ -13,7 +13,8 @@ import android.widget.TextView;
 
 public class ThreeDARMainActivity extends Activity implements SensorEventListener{
 	
-	private PreviewView 	_previewView;
+	//private PreviewView 	_previewView;
+	private FrontPreview	_frontPreview;
 	private TextView		_sensorTextView;
 	private SensorManager 	_sensorManager;
 	
@@ -29,7 +30,7 @@ public class ThreeDARMainActivity extends Activity implements SensorEventListene
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.main);
-        _previewView = (PreviewView) findViewById(R.id.preview_view);
+        _frontPreview = (FrontPreview) findViewById(R.id.front_preview_view);
         _sensorTextView = (TextView) findViewById(R.id.sensor_text_view);
         
         //Get the sensor manager from the system:
