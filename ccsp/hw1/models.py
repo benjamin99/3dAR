@@ -6,5 +6,5 @@ from google.appengine.api.users import User
 class Message(db.Model):
     content   = db.StringProperty()
     postDate  = db.DateTimeProperty(auto_now_add=True)
-    user      = db.UserProperty()
+    author    = db.UserProperty()
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import cgi
 import os
 import datetime
 from google.appengine.api import users 
@@ -27,11 +28,18 @@ class LogoutMe(webapp.RequestHandler):
         self.response.out.write('logout!')
  
 
-class AddMyMessage(webapp.RequestHandler):
+class PostMyMessage(webapp.RequestHandler):
     def post(self):
-        self.response.headers['Content-Type'] = 'text/plain'
-        self.response.out.write('Add ....')
+        message = Message()
+        
+        user = users.get_current_user()
+        if user:
+            message.author = user
 
+        #TODO: Added the content to the message: 
+        message.content = cgi.escape(self.request.get('content'))
+
+        message.put()
 
 class DeleteMyMessage(webapp.RequestHandler):
     def get(self):
@@ -41,9 +49,9 @@ class DeleteMyMessage(webapp.RequestHandler):
 #--------------------------------------------------------------------
 
 ROUTES = [
-    ('/add', AddMyMessage),
     ('/del', DeleteMyMessage),
     ('/logout', LogoutMe),
+    ('/post', PostMyMessage),
     ('/', MainPage),
 ]
 

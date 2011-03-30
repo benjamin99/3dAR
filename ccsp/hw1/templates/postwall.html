@@ -1,5 +1,29 @@
 {% extends "base.html" %}
 
+
+{% block javascripts %}
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAie3xe9ISKGFXF5OfLx2yWxRyYBXDKpms9IwNfnJulogf6GbYMBR2_yuOicPiV6VSM8ZKkQ3u2a_O-g"></script>
+<script type="text/javascript">
+        google.load("jquery", "1.3.1");
+</script>
+<script type="text/javascript" src="/static/postwall.js"></script>
+<script type="text/javascript">
+	$(document).ready(
+            function() {
+                updatePostWall();
+                setInterval(updatePostWall, 3000);
+                $("#content").keypress(function(e) {
+                    if (e.shiftKey && e.keyCode == 13) postMessage();
+                });
+            }
+        );
+
+</script>
+
+
+{% endblock %}
+
+
 {% block header %}
 	<h2> CCSP Hw1 </h2>
 {% endblock %}
@@ -7,16 +31,16 @@
 
 {% block main-container %}
 	<a> Hello ~ {{user}} ! </a>
-	<form id=postBox action='/add' method='post'>
+	<div id=postBox>
 		<!-- Text Box -->
-		<textarea name='text_box' plceholder='Type ur message here!'></textarea>
+		<textarea name='text_box' id='text_box' plceholder='Type ur message here!'></textarea>
 		<!-- Post  Button -->
-		<input type='submit' value='Post'>
+		<input type='submit' id='post_msg' value='Post' onclick='postMessage();'>
 		<!-- logout link -->
 		<span id='logout'>
 			<a href={{logout_link}}>logout</a>
 		</span>
-	</form>
-	<div id=msgWall>
+	</div>
+	<div id=postWall>
 	</div>
 {% endblock %}
