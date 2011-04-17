@@ -66,3 +66,14 @@ function updatePostWall() {
         }
     });
 }
+
+function updateWeather() {
+    $.get(
+        '/weather',
+        {},
+        function() {
+           //TODO: update the weather on the postWall.
+        }
+    );
+
+}

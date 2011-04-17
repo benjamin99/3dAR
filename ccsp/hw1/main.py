@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import cgi
-import os
 import datetime
+import os
+import urllib2
+from BeautifulSoup import BeautifulSoup
 from google.appengine.api import users 
 from google.appengine.ext import webapp
 from google.appengine.ext import db
@@ -53,7 +55,7 @@ class DeleteMyMessage(webapp.RequestHandler):
 
 class FetchNewMessage(webapp.RequestHandler):
     def get(self):
-        #Get the id that indicate where is the start point of new messages:
+        # Get the id that indicate where is the start point of new messages:
         current_id = int(self.request.get('id'))
         messages = Message.all().order('-postID').filter("postID > ", current_id)
         msg_set  = messages.fetch(10)
@@ -75,6 +77,28 @@ class FetchNewMessage(webapp.RequestHandler):
 
         self.response.out.write('    </response>\n')
 
+class FetchWeatherInfo(webapp.RequestHandler):
+    def get(self):
+        temperature = 'temp'
+        rain_chance = '-1%'
+        
+        # Fetch the information from CWB
+        webpage = urllib2.urlopen("http://www.cwb.gov.tw/")
+        soup = BeautifulSoup(webpage)
+        cityInfo = soup.find('tr', id='TaipeiCityList')
+        
+        if cityInfo:
+            temperature = cityInfo.content[1].next.string
+            rain_chance = cityInfo.content[2].next.string
+
+        # Dumping the xml content:
+        self.response.out.write('<?xml version="1.0" ?>\n')
+        self.response.out.write('    <response>\n')
+        self.response.out.write('        <temperature>%s</temperature>\n' % temperature )
+        self.response.out.write('        <rainchance>%s</rainchance>\n' % rain_chance )
+        self.response.out.write('    </response>\n')
+
+
 #--------------------------------------------------------------------
 
 ROUTES = [
@@ -82,6 +106,7 @@ ROUTES = [
     ('/fetch', FetchNewMessage),
     ('/logout', LogoutMe),
     ('/post', PostMyMessage),
+    ('/weather', FetchWeatherInfo),
     ('/', MainPage),
 ]
 
