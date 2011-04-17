@@ -46,9 +46,10 @@ class PostMyMessage(webapp.RequestHandler):
 
 class DeleteMyMessage(webapp.RequestHandler):
     def get(self):
-        self.response.headers['Content-Type'] = 'text/plain'
-        self.response.out.write('Delete ... ')
-
+        tar_id = int(self.request.get('id'))
+        targets = Message.all().filter("postID =", tar_id)
+        for msg in targets:
+            msg.delete()
 
 class FetchNewMessage(webapp.RequestHandler):
     def get(self):

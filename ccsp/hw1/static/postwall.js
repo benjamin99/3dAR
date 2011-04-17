@@ -14,6 +14,16 @@ function postMessage() {
 
 }
 
+function deleteMessage(tar_id) {
+    $.get(
+    	'/del',
+        { id: tar_id },
+        function() {
+            //TODO: delete the elements on the wall:
+            $('#'+ tar_id ).remove();
+        }
+    );
+}
 
 function updatePostWall() {
     $.ajax({
@@ -39,9 +49,13 @@ function updatePostWall() {
                         }
                         content = str + content;
                     }*/
-                    info += "<b>" + $("author", message).text() +
-                            "</b> @ " + $("time", message).text() + ":<blockquote><pre>" +
-                            content + "</pre></blockquote>";
+                    var postID = $("postID", message).text();
+                    info += "<div id=" + postID + ">" +
+                            "<b>" + $("author", message).text() +
+                            "</b> @ " + $("time", message).text() + 
+                            ":<blockquote><pre>" + content + "</pre></blockquote>" +
+                            "</b><input type='submit' id='del_msg' value='delete' onclick='deleteMessage("+ postID +");'></input>" +
+                            "</div>";
 
                 });
             }
