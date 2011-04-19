@@ -31,7 +31,7 @@ function updatePostWall() {
         url: "/fetch",
         data: {id: g_id },
         dataType: "xml",
-        timeout: 5000,
+        timeout: 3000,
         error: function() { updatePostWall();},
         success: function(xml) {
 	    var info = "";
@@ -67,13 +67,23 @@ function updatePostWall() {
     });
 }
 
-function updateWeather() {
-    $.get(
-        '/weather',
-        {},
-        function() {
+function updateWeather(cityTag) {
+    $.ajax({
+        type: 'GET',
+        url:  '/weather',
+        data: {city: cityTag},
+        dataType: 'xml',
+        timeout: 3000,
+        error: function() { updateWeather(cityTag); },
+        success: function(xml) {
            //TODO: update the weather on the postWall.
+           var cityName = $("cityname", xml).text();
+           var temperature = $("temperature", xml).text();
+           var rainChance  = $("rainchance", xml).text();
+           
+           info = cityName + " 溫度:" + temperature + " 降雨機率:" + rainChance;
+           $('#weather').text(info);
         }
-    );
+    });
 
 }

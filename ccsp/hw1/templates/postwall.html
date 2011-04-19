@@ -15,6 +15,8 @@
                 $("#content").keypress(function(e) {
                     if (e.shiftKey && e.keyCode == 13) postMessage();
                 });
+
+                updateWeather('TaipeiCityList');
             }
         );
 
@@ -30,12 +32,16 @@
 
 
 {% block main-container %}
+        <div id=infoTab>
+                <a id=browser> @ {{browser}}</a>
+                <div id=weather src='/weather'> Weather</div>
+        </div>
 	<a> Hello ~ {{user}} ! </a>
 	<div id=postBox>
 		<!-- Text Box -->
 		<textarea name='text_box' id='text_box' plceholder='Type ur message here!'></textarea>
 		<!-- Post  Button -->
-		<input type='submit' id='post_msg' value='Post' onclick='postMessage();'>
+		<input type='button' id='post_msg' value='Post' onclick='postMessage();'>
 		<!-- logout link -->
 		<span id='logout'>
 			<a href={{logout_link}}>logout</a>
