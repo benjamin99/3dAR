@@ -54,7 +54,7 @@ class DeleteMyMessage(webapp.RequestHandler):
         tar_id = int(self.request.get('id'))
         targets = Message.all().filter("postID =", tar_id)
         for msg in targets:
-            msg.delete()
+            msg.release()
 
 class FetchNewMessage(webapp.RequestHandler):
     def get(self):
@@ -72,12 +72,15 @@ class FetchNewMessage(webapp.RequestHandler):
         self.response.out.write('    <response>\n')
         self.response.out.write('        <id>%d</id>\n' % Message.max_id() )
         for msg in msg_set:
-            self.response.out.write('        <message>\n')
-            self.response.out.write('            <author>%s</author>\n' % msg.author.nickname() )
-            self.response.out.write('            <postID>%d</postID>\n' % msg.postID )
-            self.response.out.write('            <content>%s</content>\n' % msg.content )
-            self.response.out.write('            <time>%s</time>\n' % msg.postDate )
-            self.response.out.write('        </message>\n')            
+            if not msg.isRemoved:
+                msg.retain();
+                self.response.out.write('        <message>\n')
+                self.response.out.write('            <author>%s</author>\n' % msg.author.nickname() )
+                self.response.out.write('            <postID>%d</postID>\n' % msg.postID )
+                self.response.out.write('            <content>%s</content>\n' % msg.content )
+                self.response.out.write('            <rcount>%d</rcount>\n' % msg.rCount )
+                self.response.out.write('            <time>%s</time>\n' % msg.postDate )
+                self.response.out.write('        </message>\n')            
 
         self.response.out.write('    </response>\n')
 

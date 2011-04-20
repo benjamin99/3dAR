@@ -52,7 +52,8 @@ function updatePostWall() {
                     var postID = $("postID", message).text();
                     info += "<div id=" + postID + ">" +
                             "<b>" + $("author", message).text() +
-                            "</b> @ " + $("time", message).text() + 
+                            "</b> @ " + $("time", message).text() +
+                            " -- " + $("rcount", message).text() + 
                             ":<blockquote><pre>" + content + "</pre></blockquote>" +
                             "</b><input type='submit' id='del_msg' value='delete' onclick='deleteMessage("+ postID +");'></input>" +
                             "</div>";
