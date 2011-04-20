@@ -57,7 +57,7 @@ function updatePostWall() {
                             ":<blockquote><pre>" + content + "</pre></blockquote>" +
                             "</b><input type='submit' id='del_msg' value='delete' onclick='deleteMessage("+ postID +");'></input>" +
                             "</div>";
-
+                    retainMessage(postID);
                 });
             }
             if(info) {
@@ -67,6 +67,18 @@ function updatePostWall() {
         }
     });
 }
+
+function retainMessage( msg_id ) {
+    $.ajax({
+        type: 'GET',
+        url:  '/retain',
+        data: {id: msg_id},
+        timeout: 3000,
+        error: function() { retainMessage(msg_id); },
+        success: function() {}
+    });
+}
+
 
 function updateWeather(cityTag) {
     $.ajax({
@@ -88,3 +100,5 @@ function updateWeather(cityTag) {
     });
 
 }
+
+

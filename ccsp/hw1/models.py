@@ -8,7 +8,7 @@ class Message(db.Model):
     postDate  = db.DateTimeProperty(auto_now_add=True)
     postID    = db.IntegerProperty()
     author    = db.UserProperty()
-    rCount    = db.IntegerProperty(default=1)
+    rCount    = db.IntegerProperty(default=0)
     isRemoved = db.BooleanProperty(default=False)    
  
     def retain(self):

@@ -73,7 +73,6 @@ class FetchNewMessage(webapp.RequestHandler):
         self.response.out.write('        <id>%d</id>\n' % Message.max_id() )
         for msg in msg_set:
             if not msg.isRemoved:
-                msg.retain();
                 self.response.out.write('        <message>\n')
                 self.response.out.write('            <author>%s</author>\n' % msg.author.nickname() )
                 self.response.out.write('            <postID>%d</postID>\n' % msg.postID )
@@ -114,6 +113,13 @@ class FetchWeatherInfo(webapp.RequestHandler):
         self.response.out.write('        <rainchance>%s</rainchance>\n' % rain_chance )
         self.response.out.write('    </response>\n')
 
+class RetainMessage(webapp.RequestHandler):
+    def get(self):
+        tar_id = int(self.request.get('id'))
+        targets = Message.all().filter("postID =", tar_id)
+        for msg in targets:
+            msg.retain() 
+              
 
 #--------------------------------------------------------------------
 
@@ -122,6 +128,7 @@ ROUTES = [
     ('/fetch', FetchNewMessage),
     ('/logout', LogoutMe),
     ('/post', PostMyMessage),
+    ('/retain', RetainMessage),
     ('/weather', FetchWeatherInfo),
     ('/', MainPage),
 ]
