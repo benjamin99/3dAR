@@ -1,0 +1,13 @@
+application: ccsp2011hw2
+version: test
+runtime: python
+api_version: 1
+
+handlers: 
+- url: /statics
+  static_dir: statics
+
+- url: /.*
+  script: main.py
+
+
