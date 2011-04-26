@@ -9,7 +9,9 @@ from models import Department
 from models import SUPPER_DPT
 
 apiPrefix = 'tzuhua'
-dptUrl = 'http://www.tzuchi.com.tw/tzuchi/Family/Default.aspx?AppSiteID=1'
+
+tzuUrl = 'http://www.tzuchi.com.tw/tzuchi/Family/'
+dptUrl = 'http://www.tzuchi.com.tw/tchw/opdreg/SecList_HL.aspx'
 
 # ------------------------------------------------------------
 class HelloWorld(webapp.RequestHandler):
@@ -18,42 +20,53 @@ class HelloWorld(webapp.RequestHandler):
 
 class DepartmentParser(webapp.RequestHandler):
     def get(self):
-        soup  = BeautifulSoup( urllib2.urlopen(dptUrl) )
-        form  = soup.find('form', id = 'Form1' )
-        table = form.contents[25].findAll('table')
-  
-        for i in range(0, len(table) ):
-            subDptList = table[i].findAll('a')
-            j = 0
-            for one in subDptList:
-                j = j + 1
-                dept = Department()
-                dept.dptName = one.text
-                dept.dptCode = (i+1)*100 + j
-                if i < 4:
-                    dept.supper  = SUPPER_DPT[i]  
-                dept.put()
+        soup  = BeautifulSoup( urllib2.urlopen( dptUrl ) )
+        table = soup.form.find('table', id='Table1')
+        tdlist = table.findAll('td')
+        
+        code = 0;
+        for td in tdlist:
+            name = td.a.text.split('(')[0]    # Using split to escape the spcial case
+            dpt = Department()
+            dpt.dptName = name 
+            dpt.dptCode = code
+            code = code + 1
+
+            urlStr1 = 'http://www.tzuchi.com.tw/tchw/opdreg/OpdTimeShow.aspx?Depart='
+            urlStr2 = '&HospLoc=3'
+            dpt.dptLink = urlStr1 + urllib2.quote(name.encode('utf-8')) + urlStr2
+            dpt.put()
         
         self.response.out.write("Finish for department list ...")
 
 class DepartmentFetcher(webapp.RequestHandler):
     def get(self):
         dptList = Department.all() #.order('dptCode')
+        jsList = [];
         for one in dptList:
-            self.response.out.write('%s' % one.dptName ) 
-            self.response.out.write(' %d\n' % one.dptCode )       
+            jsObj = { 
+                      str(one.dptCode):one.dptName,
+                      'link'          :one.dptLink  
+                    }
+            jsList.append( jsObj )
+        
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write( simplejson.dumps(jsList) )
 
 class DoctorParser(webapp.RequestHandler):
     def get(self):
         self.response.out.write("Req for doctor list ...")
 
+class DoctorFetcher(webapp.RequestHandler):
+    def get(self):
+        self.response.out.write('Doctor Parser:')
 # ------------------------------------------------------------
 
 ROUTES = [
-    ('/' + apiPrefix + '/dept/parse', DepartmentParser),
-    ('/' + apiPrefix + '/doctor/parse', DoctorParser),
+    ('/parse/dept', DepartmentParser),
+    ('/parse/doctor', DoctorParser),
     ('/' + apiPrefix + '/dept', DepartmentFetcher ),
-    #('/' + apiPrefix + '/doctor', DoctorFetcher)
+    ('/' + apiPrefix + '/doctor', DoctorFetcher),
     ('/', HelloWorld),
 ]
 application = webapp.WSGIApplication( ROUTES, debug = True )
