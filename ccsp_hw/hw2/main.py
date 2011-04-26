@@ -1,6 +1,7 @@
 import os
 import urllib2
 from BeautifulSoup import BeautifulSoup
+from django.utils import simplejson
 from google.appengine.ext import webapp
 from google.appengine.ext import db
 from google.appengine.ext.webapp.util import run_wsgi_app
