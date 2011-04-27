@@ -12,4 +12,4 @@ class Doctor( db.Model ):
     docName = db.StringProperty()
     docCode = db.StringProperty()
 
-class Clinic( db.Model ):
+#class Clinic( db.Model ):

@@ -1,11 +1,12 @@
 import os
+import re
 import urllib2
 from BeautifulSoup import BeautifulSoup
 from django.utils import simplejson
 from google.appengine.ext import webapp
 from google.appengine.ext import db
 from google.appengine.ext.webapp.util import run_wsgi_app
-from models import Department
+from models import Department, Doctor
 from models import SUPPER_DPT
 
 apiPrefix = 'tzuhua'
@@ -53,16 +54,56 @@ class DepartmentFetcher(webapp.RequestHandler):
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write( simplejson.dumps(jsList) )
 
-class DoctorParser(webapp.RequestHandler):
+class DoctorRemover(webapp.RequestHandler):
     def get(self):
-        self.response.out.write("Req for doctor list ...")
+        doctors = Doctor.all()
+        for one in doctors:
+            one.delete()
+        self.response.out.write('Delete all doctor data ...')
+
+class DoctorParser(webapp.RequestHandler):    # Should pass the link to the department page:
+    def get(self):
+#dptKey = self.request.get('key')
+#        testStr = 'NOT OK'
+#        if dptKey:
+#            testStr = dptKey
+#            dpt = db.get( dptKey )
+        dptList = Department.all()
+        for dpt in dptList:
+            testStr = dpt.dptName
+            soup = BeautifulSoup( urllib2.urlopen( dpt.dptLink ) )
+            list = soup.table.findAll('a')
+            for one in list:
+                text = one.text;
+                name = re.split('[0-9]', text)[0]
+                code = text[ len(name):]
+                doc  = Doctor.all().filter('docCode =', code).get()
+                if not doc:
+                    doc = Doctor()
+                    doc.docName = name
+                    doc.docCode = code
+                    doc.put()
+
+        self.response.out.write( testStr)
 
 class DoctorFetcher(webapp.RequestHandler):
     def get(self):
-        self.response.out.write('Doctor Parser:')
+        docList = Doctor.all() #.order('dptCode')
+        jsList = [];
+        for one in docList:
+            jsObj = { 
+                      'name': one.docName,
+                      'code': one.docCode  
+                    }
+            jsList.append( jsObj )
+        
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write( simplejson.dumps(jsList) )
+
 # ------------------------------------------------------------
 
 ROUTES = [
+    ('/remove/doctor', DoctorRemover),
     ('/parse/dept', DepartmentParser),
     ('/parse/doctor', DoctorParser),
     ('/' + apiPrefix + '/dept', DepartmentFetcher ),
