@@ -5,6 +5,7 @@ from BeautifulSoup import BeautifulSoup
 from django.utils import simplejson
 from google.appengine.ext import webapp
 from google.appengine.ext import db
+from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 from models import Department, Doctor
 from models import SUPPER_DPT
@@ -29,7 +30,7 @@ class DepartmentParser(webapp.RequestHandler):
         for td in tdlist:
             name = td.a.text.split('(')[0]    # Using split to escape the spcial case
             dpt = Department()
-            dpt.dptName = name 
+            dpt.dptName = name          # Removing the @ character 
             dpt.dptCode = code
             code = code + 1
 
@@ -54,6 +55,14 @@ class DepartmentFetcher(webapp.RequestHandler):
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write( simplejson.dumps(jsList) )
 
+class DepartmentRemover(webapp.RequestHandler):
+    def get(self):
+        departments = Department.all()
+        for one in departments:
+            one.delete()
+
+        self.response.out.write('Delete all department data ...')
+
 class DoctorRemover(webapp.RequestHandler):
     def get(self):
         doctors = Doctor.all()
@@ -63,28 +72,43 @@ class DoctorRemover(webapp.RequestHandler):
 
 class DoctorParser(webapp.RequestHandler):    # Should pass the link to the department page:
     def get(self):
-#dptKey = self.request.get('key')
-#        testStr = 'NOT OK'
-#        if dptKey:
-#            testStr = dptKey
-#            dpt = db.get( dptKey )
-        dptList = Department.all()
-        for dpt in dptList:
-            testStr = dpt.dptName
-            soup = BeautifulSoup( urllib2.urlopen( dpt.dptLink ) )
-            list = soup.table.findAll('a')
-            for one in list:
-                text = one.text;
-                name = re.split('[0-9]', text)[0]
-                code = text[ len(name):]
-                doc  = Doctor.all().filter('docCode =', code).get()
-                if not doc:
-                    doc = Doctor()
-                    doc.docName = name
-                    doc.docCode = code
-                    doc.put()
+        code = int(self.request.get('code', '0'))
+        q = Department.gql('WHERE dptCode >= :1 ORDER BY dptCode', code)
+        dpts = q.fetch(limit=2)
+        nowDpt  = dpts[0]
+        
+        if ( len(dpts) > 1 ):
+            nextDpt = dpts[1]
+        else:
+            nextDpt = None;
 
-        self.response.out.write( testStr)
+        testStr = nowDpt.dptName
+        soup = BeautifulSoup( urllib2.urlopen( nowDpt.dptLink ) )
+        list = soup.table.findAll('a')
+        for one in list:
+            text = one.text;
+            name = re.split('[0-9]', text)[0]
+            code = text[ len(name):].split(' ')[0].split('(')[0]  # Dealing w/ the special cases
+            doc  = Doctor.all().filter('docCode =', code).get()
+            if not doc and len(code) != 0:
+                doc = Doctor()
+                doc.docName = name
+                doc.docCode = code
+                doc.put()
+        
+        if( len(dpts) > 1):
+            nextUrl  = '/parse/doctor?code=%d' %  nextDpt.dptCode 
+            nextName = nextDpt.dptName
+        else:
+            nextUrl  = '/'
+            nextName = 'END OF PARSING'
+
+        context = { 
+            'nextUrl' : nextUrl,
+            'nextName': nextName,
+        }
+        path = os.path.join( os.path.dirname('__file__'), 'templates', 'dptParse.html')
+        self.response.out.write( template.render( path, context) )
 
 class DoctorFetcher(webapp.RequestHandler):
     def get(self):
@@ -104,6 +128,7 @@ class DoctorFetcher(webapp.RequestHandler):
 
 ROUTES = [
     ('/remove/doctor', DoctorRemover),
+    ('/remove/dept', DepartmentRemover),
     ('/parse/dept', DepartmentParser),
     ('/parse/doctor', DoctorParser),
     ('/' + apiPrefix + '/dept', DepartmentFetcher ),
