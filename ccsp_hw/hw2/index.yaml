@@ -1,0 +1,11 @@
+indexes:
+
+- kind: Clinic
+  properties:
+  - name: doctor
+  - name: dept
+
+- kind: Clinic
+  properties:
+  - name: dept
+  - name: doctor
