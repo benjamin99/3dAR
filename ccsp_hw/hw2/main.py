@@ -43,17 +43,37 @@ class DepartmentParser(webapp.RequestHandler):
 
 class DepartmentFetcher(webapp.RequestHandler):
     def get(self):
-        dptList = Department.all() #.order('dptCode')
-        jsList = [];
-        for one in dptList:
-            jsObj = { 
-                      str(one.dptCode):one.dptName,
-                      'link'          :one.dptLink  
-                    }
-            jsList.append( jsObj )
-        
+        id = self.request.get('id')
+        jsArray = []
+
+        if not id:
+            dptList = Department.all() 
+            for one in dptList:
+                jsObj = { 
+                    str(one.dptCode):one.dptName
+                    #'link'          :one.dptLink  
+                }
+                jsArray.append( jsObj )
+       
+        else: 
+            jsArray.append( {"id": id } )
+            dept = Department.all().filter('dptCode = ', int(id) ).get()
+            if dept:
+                jsArray.append( {"name": dept.dptName } )
+                
+                # searching for the clinic info:
+                doctors  = []
+                docCodes = []
+                clinics = Clinic.all().filter('dept =', dept.key() ).order('doctor')
+                for one in clinics:
+                    if one.doctor.docCode not in docCodes:
+                        docCodes.append( one.doctor.docCode )
+                        doctors.append( { one.doctor.docCode : one.doctor.docName } )
+
+                jsArray.append( { "doctor" : doctors }) 
+    
         self.response.headers['Content-Type'] = 'application/json'
-        self.response.out.write( simplejson.dumps(jsList) )
+        self.response.out.write( simplejson.dumps(jsArray) )
 
 class DepartmentRemover(webapp.RequestHandler):
     def get(self):
@@ -108,18 +128,36 @@ class DoctorParser(webapp.RequestHandler):    # Should pass the link to the depa
 
 class DoctorFetcher(webapp.RequestHandler):
     def get(self):
-        docList = Doctor.all() #.order('dptCode')
-        jsList = [];
-        #i = 0
-        for one in docList:
-            jsObj = {
+        id = self.request.get('id')
+        jsArray = [];
+
+        if not id:
+            docList = Doctor.all()
+            for one in docList:
+                jsObj = {
                         one.docCode: one.docName
-                    }
-            jsList.append( jsObj )
-            #i = i+1
-        #jsList.append( { 'count': i })
+                }
+                jsArray.append( jsObj )
+        
+        else:
+            jsArray.append( { "id": id } ) 
+            doc = Doctor.all().filter('docCode =', id).get()
+            if doc:
+                jsArray.append( {"name": doc.docName } )
+
+                # searching for the clinic info:
+                depts = []
+                deptCodes = [] 
+                clinics = Clinic.all().filter( 'doctor =', doc.key() ).order('dept')
+                for one in clinics:
+                    if one.dept.dptCode not in deptCodes:    # making sure that dept will not be repeated
+                        deptCodes.append( one.dept.dptCode )
+                        depts.append( { one.dept.dptCode : one.dept.dptName } )
+                
+                jsArray.append( { "dept": depts } )
+                 
         self.response.headers['Content-Type'] = 'application/json'
-        self.response.out.write( simplejson.dumps(jsList) )
+        self.response.out.write( simplejson.dumps(jsArray) )
 
 class ClinicRemover(webapp.RequestHandler):
     def get(self):
