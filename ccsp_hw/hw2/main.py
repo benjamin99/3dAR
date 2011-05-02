@@ -7,7 +7,7 @@ from google.appengine.ext import webapp
 from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
-from models import Department, Doctor
+from models import Department, Doctor, Clinic
 from models import SUPPER_DPT
 
 apiPrefix = 'tzuhua'
@@ -77,12 +77,6 @@ class DoctorParser(webapp.RequestHandler):    # Should pass the link to the depa
         dpts = q.fetch(limit=2)
         nowDpt  = dpts[0]
         
-        if ( len(dpts) > 1 ):
-            nextDpt = dpts[1]
-        else:
-            nextDpt = None;
-
-        testStr = nowDpt.dptName
         soup = BeautifulSoup( urllib2.urlopen( nowDpt.dptLink ) )
         list = soup.table.findAll('a')
         for one in list:
@@ -97,6 +91,7 @@ class DoctorParser(webapp.RequestHandler):    # Should pass the link to the depa
                 doc.put()
         
         if( len(dpts) > 1):
+            nextDpt  = dpts[1] 
             nextUrl  = '/parse/doctor?code=%d' %  nextDpt.dptCode 
             nextName = nextDpt.dptName
         else:
@@ -104,32 +99,82 @@ class DoctorParser(webapp.RequestHandler):    # Should pass the link to the depa
             nextName = 'END OF PARSING'
 
         context = { 
+            'type'    : 'Doctor',
             'nextUrl' : nextUrl,
             'nextName': nextName,
         }
-        path = os.path.join( os.path.dirname('__file__'), 'templates', 'docParse.html')
+        path = os.path.join( os.path.dirname('__file__'), 'templates', 'parser.html')
         self.response.out.write( template.render( path, context) )
 
 class DoctorFetcher(webapp.RequestHandler):
     def get(self):
         docList = Doctor.all() #.order('dptCode')
         jsList = [];
-        i = 0
+        #i = 0
         for one in docList:
             jsObj = {
                         one.docCode: one.docName
                     }
             jsList.append( jsObj )
-            i = i+1
+            #i = i+1
         #jsList.append( { 'count': i })
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write( simplejson.dumps(jsList) )
 
+class ClinicRemover(webapp.RequestHandler):
+    def get(self):
+        clinics = Clinic.all()
+        for one in clinics:
+            one.delete()
+
+        self.response.out.write('Removed all clinic data ...')
+
+class ClinicParser(webapp.RequestHandler):
+    def get(self):
+        code = int(self.request.get('code', '0'))
+        q = Department.gql('WHERE dptCode >= :1 ORDER BY dptCode', code)
+        dpts = q.fetch(limit=2)
+        nowDpt  = dpts[0]
+        
+        soup = BeautifulSoup( urllib2.urlopen( nowDpt.dptLink ) )
+        list = soup.table.findAll( lambda tag: tag.name == 'a' and len(tag.attrs) == 2 )
+        for one in list:
+            text = one.text;
+            name = re.split('[0-9]', text)[0]
+            doc  = Doctor.all().filter('docName =', name).get()
+            if doc:
+                clinic = Clinic()
+                link = one['href']
+                code = link.split('data=')[1].split('&sLoc')[0]
+                clinic.link   = link
+                clinic.code   = code
+                clinic.doctor = doc.key()
+                clinic.dept   = nowDpt.key() 
+                clinic.put()
+        
+        if( len(dpts) > 1):
+            nextDpt = dpts[1]
+            nextUrl  = '/parse/clinic?code=%d' %  nextDpt.dptCode 
+            nextName = nextDpt.dptName
+        else:
+            nextUrl  = '/'
+            nextName = 'END OF PARSING'
+
+        context = { 
+            'type'    : 'Clinic',
+            'nextUrl' : nextUrl,
+            'nextName': nextName,
+        }
+        path = os.path.join( os.path.dirname('__file__'), 'templates', 'parser.html')
+        self.response.out.write( template.render( path, context) )
+
 # ------------------------------------------------------------
 
 ROUTES = [
+    ('/remove/clinic', ClinicRemover),
     ('/remove/doctor', DoctorRemover),
     ('/remove/dept', DepartmentRemover),
+    ('/parse/clinic', ClinicParser),
     ('/parse/dept', DepartmentParser),
     ('/parse/doctor', DoctorParser),
     ('/' + apiPrefix + '/dept', DepartmentFetcher ),

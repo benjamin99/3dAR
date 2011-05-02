@@ -12,4 +12,11 @@ class Doctor( db.Model ):
     docName = db.StringProperty()
     docCode = db.StringProperty()
 
+class Clinic( db.Model ):
+    link   = db.StringProperty()
+    date   = db.StringProperty()
+    code   = db.StringProperty()
+    doctor = db.ReferenceProperty( Doctor ) 
+    dept   = db.ReferenceProperty( Department )
+
 #class Clinic( db.Model ):
