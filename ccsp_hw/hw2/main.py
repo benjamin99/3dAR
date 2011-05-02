@@ -107,7 +107,7 @@ class DoctorParser(webapp.RequestHandler):    # Should pass the link to the depa
             'nextUrl' : nextUrl,
             'nextName': nextName,
         }
-        path = os.path.join( os.path.dirname('__file__'), 'templates', 'dptParse.html')
+        path = os.path.join( os.path.dirname('__file__'), 'templates', 'docParse.html')
         self.response.out.write( template.render( path, context) )
 
 class DoctorFetcher(webapp.RequestHandler):
