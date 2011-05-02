@@ -114,13 +114,14 @@ class DoctorFetcher(webapp.RequestHandler):
     def get(self):
         docList = Doctor.all() #.order('dptCode')
         jsList = [];
+        i = 0
         for one in docList:
-            jsObj = { 
-                      'name': one.docName,
-                      'code': one.docCode  
+            jsObj = {
+                        one.docCode: one.docName
                     }
             jsList.append( jsObj )
-        
+            i = i+1
+        #jsList.append( { 'count': i })
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write( simplejson.dumps(jsList) )
 
