@@ -63,14 +63,17 @@ class DepartmentFetcher(webapp.RequestHandler):
                 
                 # searching for the clinic info:
                 doctors  = []
+                times    = []
                 docCodes = []
                 clinics = Clinic.all().filter('dept =', dept.key() ).order('doctor')
                 for one in clinics:
+                    times.append( one.date )
                     if one.doctor.docCode not in docCodes:
                         docCodes.append( one.doctor.docCode )
                         doctors.append( { one.doctor.docCode : one.doctor.docName } )
 
                 jsArray.append( { "doctor" : doctors }) 
+                jsArray.append( { "time"   : times   })
     
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write( simplejson.dumps(jsArray) )
@@ -147,15 +150,18 @@ class DoctorFetcher(webapp.RequestHandler):
 
                 # searching for the clinic info:
                 depts = []
+                times = []
                 deptCodes = [] 
                 clinics = Clinic.all().filter( 'doctor =', doc.key() ).order('dept')
                 for one in clinics:
+                    times.append( one.date )
                     if one.dept.dptCode not in deptCodes:    # making sure that dept will not be repeated
                         deptCodes.append( one.dept.dptCode )
                         depts.append( { one.dept.dptCode : one.dept.dptName } )
                 
                 jsArray.append( { "dept": depts } )
-                 
+                jsArray.append( { "time": times } )
+
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write( simplejson.dumps(jsArray) )
 
@@ -175,20 +181,39 @@ class ClinicParser(webapp.RequestHandler):
         nowDpt  = dpts[0]
         
         soup = BeautifulSoup( urllib2.urlopen( nowDpt.dptLink ) )
-        list = soup.table.findAll( lambda tag: tag.name == 'a' and len(tag.attrs) == 2 )
-        for one in list:
-            text = one.text;
-            name = re.split('[0-9]', text)[0]
-            doc  = Doctor.all().filter('docName =', name).get()
-            if doc:
-                clinic = Clinic()
-                link = one['href']
-                code = link.split('data=')[1].split('&sLoc')[0]
-                clinic.link   = link
-                clinic.code   = code
-                clinic.doctor = doc.key()
-                clinic.dept   = nowDpt.key() 
-                clinic.put()
+        trlist = soup.table.findAll('tr', align='left')
+        for tr in trlist:
+            tdlist = tr.findAll('td')
+            
+            column = 0;
+            for td in tdlist:
+                if column == 0:
+                    dateStr = td.text.split('(')[1].split(')')[0]
+                else:
+                    if column == 1:
+                        timeStr = ' A'
+                    elif column == 2:
+                        timeStr = ' B'
+                    else:
+                        timeStr = ' C'
+ 
+                    alist = td.findAll(lambda tag: tag.name == 'a' and len(tag.attrs) == 2)
+                    for a in alist:
+                        text = a.text
+                        name = re.split('[0-9]', text)[0]
+                        doc  = Doctor.all().filter('docName = ', name).get()
+                        if doc:
+                            clinic = Clinic()
+                            link = a['href']
+                            code = link.split('data=')[1].split('&sLoc')[0]
+                            clinic.link = link
+                            clinic.code = code
+                            clinic.doctor = doc.key()
+                            clinic.dept   = nowDpt.key()
+                            clinic.date   = dateStr + timeStr
+                            clinic.put()
+
+                column = column + 1
         
         if( len(dpts) > 1):
             nextDpt = dpts[1]
