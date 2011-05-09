@@ -1,6 +1,7 @@
 import os
 import re
 import urllib2
+from urlgrabber.keepalive import HTTPHandler
 from BeautifulSoup import BeautifulSoup
 from django.utils import simplejson
 from google.appengine.ext import webapp
@@ -18,6 +19,9 @@ dptUrl = 'http://www.tzuchi.com.tw/tchw/opdreg/SecList_HL.aspx'
 # ------------------------------------------------------------
 class HelloWorld(webapp.RequestHandler):
     def get(self):
+        br = mechanize.Browser()
+        br.set_handle_equiv(True)
+        br.set_handle_redirect(True)
         self.response.out.write("HELLO WORLD")
 
 class DepartmentParser(webapp.RequestHandler):
