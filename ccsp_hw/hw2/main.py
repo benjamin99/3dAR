@@ -241,45 +241,77 @@ class ClinicParser(webapp.RequestHandler):
 class RegisterChecker(webapp.RequestHandler):
     def post(self):
         okey = False
+        errorMessage = ''
         docData   = self.request.get('doctor')
         deptData  = self.request.get('dept')
         timeData  = self.request.get('time')  
         idData    = self.request.get('id')
         firstData = self.request.get('first')
         phoneData = self.request.get('phone')
+        
+        if len(phoneData) == 0:
+            jsDic = { "status" : "2",  
+                      "message": [{"phone":"Phone Number"}],
+                    }       
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write( simplejson.dumps(jsDic) )
+            return 
 
-        # TODO: check for values:
+        # TODO: check for rest values:
         doc  = Doctor.all().filter('docCode =', docData ).get()
         dept = Department.all().filter('dptCode =', int(deptData) ).get()
-        if doc and dept:
+        if not doc:
+            errorMessage = 'BadDoctorId'
+        elif not dept:
+            errorMessage = 'BadDeptId'
+        elif not timeData:
+            errorMessage = 'MissingTimeInfo'
+        else:
             clinic = Clinic.all().filter('doctor =', doc).filter('dept =', dept).filter('date =', timeData).get()
-            if clinic:
+            if not clinic:
+                errorMessage = 'TimeInfoError'
+            else:
                 okey = True 
-        
+       
+         
         if okey:
             # Save the info to the db:
             reg = Register()
             reg.doc = doc
             reg.dept = dept
+            reg.link = clinic.link
             reg.theId = idData
             reg.isFirst = bool(firstData.lower() == 'true')
             reg.phone = phoneData
             reg.put()
-
-        self.response.out.write("TODO: RegisterChecker")
-        self.response.out.write('</br>')
-        self.response.out.write("<br/>doc: " + docData)
-        self.response.out.write("<br/>dept: " + deptData)
-        self.response.out.write("<br/>timeData: " + timeData)
-        self.response.out.write('<br/>id: ' + idData)
-        self.response.out.write('<br/>isFirst: ' + str( bool(firstData.lower() == 'true') ) )
-        self.response.out.write('<br/>')
-        self.response.out.write('<br/>Result: ' + str(okey) )
-        self.response.out.write('<br>link: ' + clinic.link )
+            self.redirect('/tools/register?key=%s' % str(reg.key()) )
+        
+        else:
+            jsDic = { "status":"1",
+                      "message": errorMessage,
+                    }
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write( simplejson.dumps(jsDic) )
+            return
+        #self.response.out.write("TODO: RegisterChecker")
+        #self.response.out.write('</br>')
+        #self.response.out.write("<br/>doc: " + docData)
+        #self.response.out.write("<br/>dept: " + deptData)
+        #self.response.out.write("<br/>timeData: " + timeData)
+        #self.response.out.write('<br/>id: ' + idData)
+        #self.response.out.write('<br/>isFirst: ' + str( bool(firstData.lower() == 'true') ) )
+        #self.response.out.write('<br/>')
+        #self.response.out.write('<br/>Result: ' + str(okey) )
 
 class RegisterProcessor(webapp.RequestHandler):
     def get(self):
-        registerKey = self.request.get('key')
+        key = self.request.get('key')
+        reg = db.get(key)
+        if not reg:
+            self.response.out.write('Error Key')
+        else:
+            self.response.out.write('link: %s' % reg.link)
+
 # ------------------------------------------------------------
 
 ROUTES = [
