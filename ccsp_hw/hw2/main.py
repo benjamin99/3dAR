@@ -1,7 +1,7 @@
 import os
 import re
 import urllib2
-from urlgrabber.keepalive import HTTPHandler
+import datetime
 from BeautifulSoup import BeautifulSoup
 from django.utils import simplejson
 from google.appengine.ext import webapp
@@ -19,9 +19,6 @@ dptUrl = 'http://www.tzuchi.com.tw/tchw/opdreg/SecList_HL.aspx'
 # ------------------------------------------------------------
 class HelloWorld(webapp.RequestHandler):
     def get(self):
-        br = mechanize.Browser()
-        br.set_handle_equiv(True)
-        br.set_handle_redirect(True)
         self.response.out.write("HELLO WORLD")
 
 class DepartmentParser(webapp.RequestHandler):
@@ -69,7 +66,7 @@ class DepartmentFetcher(webapp.RequestHandler):
                 doctors  = []
                 times    = []
                 docCodes = []
-                clinics = Clinic.all().filter('dept =', dept.key() ).order('doctor')
+                clinics = Clinic.all().filter('dept =', dept.key() ).order('date')
                 for one in clinics:
                     times.append( one.date )
                     if one.doctor.docCode not in docCodes:
@@ -156,7 +153,7 @@ class DoctorFetcher(webapp.RequestHandler):
                 depts = []
                 times = []
                 deptCodes = [] 
-                clinics = Clinic.all().filter( 'doctor =', doc.key() ).order('dept')
+                clinics = Clinic.all().filter( 'doctor =', doc.key() ).order('date')
                 for one in clinics:
                     times.append( one.date )
                     if one.dept.dptCode not in deptCodes:    # making sure that dept will not be repeated
@@ -193,13 +190,16 @@ class ClinicParser(webapp.RequestHandler):
             for td in tdlist:
                 if column == 0:
                     dateStr = td.text.split('(')[1].split(')')[0]
+                    month   = dateStr.split('/')[0]
+                    day     = dateStr.split('/')[1]
+                    year    = str(datetime.datetime.now().year)
                 else:
                     if column == 1:
-                        timeStr = ' A'
+                        timeStr = 'A'
                     elif column == 2:
-                        timeStr = ' B'
+                        timeStr = 'B'
                     else:
-                        timeStr = ' C'
+                        timeStr = 'C'
  
                     alist = td.findAll(lambda tag: tag.name == 'a' and len(tag.attrs) == 2)
                     for a in alist:
@@ -214,7 +214,7 @@ class ClinicParser(webapp.RequestHandler):
                             clinic.code = code
                             clinic.doctor = doc.key()
                             clinic.dept   = nowDpt.key()
-                            clinic.date   = dateStr + timeStr
+                            clinic.date   = year + '-' + month + '-' + day + '-' + timeStr
                             clinic.put()
 
                 column = column + 1

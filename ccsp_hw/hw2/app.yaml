@@ -7,6 +7,10 @@ handlers:
 - url: /statics
   static_dir: statics
 
+- url: /test
+  script: test.py
+  login: required
+
 - url: /.*
   script: main.py
 

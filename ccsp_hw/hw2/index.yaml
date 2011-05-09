@@ -9,3 +9,13 @@ indexes:
   properties:
   - name: dept
   - name: doctor
+
+- kind: Clinic
+  properties:
+  - name: dept
+  - name: date
+
+- kind: Clinic
+  properties:
+  - name: doctor
+  - name: date
