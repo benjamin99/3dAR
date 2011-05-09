@@ -1,20 +1,23 @@
 import os
 import re
+import urllib
 import urllib2
 import datetime
+import cookielib
 from BeautifulSoup import BeautifulSoup
 from django.utils import simplejson
 from google.appengine.ext import webapp
 from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
-from models import Department, Doctor, Clinic
+from models import Department, Doctor, Clinic, Register
 from models import SUPPER_DPT
 
 apiPrefix = 'tzuhua'
 
 tzuUrl = 'http://www.tzuchi.com.tw/tzuchi/Family/'
 dptUrl = 'http://www.tzuchi.com.tw/tchw/opdreg/SecList_HL.aspx'
+tzuPrifix = 'http://www.tzuchi.com.tw/tchw/opdreg/'
 
 # ------------------------------------------------------------
 class HelloWorld(webapp.RequestHandler):
@@ -210,7 +213,7 @@ class ClinicParser(webapp.RequestHandler):
                             clinic = Clinic()
                             link = a['href']
                             code = link.split('data=')[1].split('&sLoc')[0]
-                            clinic.link = link
+                            clinic.link = tzuPrifix + link
                             clinic.code = code
                             clinic.doctor = doc.key()
                             clinic.dept   = nowDpt.key()
@@ -234,7 +237,49 @@ class ClinicParser(webapp.RequestHandler):
         }
         path = os.path.join( os.path.dirname('__file__'), 'templates', 'parser.html')
         self.response.out.write( template.render( path, context) )
+# ------------------------------------------------------------
+class RegisterChecker(webapp.RequestHandler):
+    def post(self):
+        okey = False
+        docData   = self.request.get('doctor')
+        deptData  = self.request.get('dept')
+        timeData  = self.request.get('time')  
+        idData    = self.request.get('id')
+        firstData = self.request.get('first')
+        phoneData = self.request.get('phone')
 
+        # TODO: check for values:
+        doc  = Doctor.all().filter('docCode =', docData ).get()
+        dept = Department.all().filter('dptCode =', int(deptData) ).get()
+        if doc and dept:
+            clinic = Clinic.all().filter('doctor =', doc).filter('dept =', dept).filter('date =', timeData).get()
+            if clinic:
+                okey = True 
+        
+        if okey:
+            # Save the info to the db:
+            reg = Register()
+            reg.doc = doc
+            reg.dept = dept
+            reg.theId = idData
+            reg.isFirst = bool(firstData.lower() == 'true')
+            reg.phone = phoneData
+            reg.put()
+
+        self.response.out.write("TODO: RegisterChecker")
+        self.response.out.write('</br>')
+        self.response.out.write("<br/>doc: " + docData)
+        self.response.out.write("<br/>dept: " + deptData)
+        self.response.out.write("<br/>timeData: " + timeData)
+        self.response.out.write('<br/>id: ' + idData)
+        self.response.out.write('<br/>isFirst: ' + str( bool(firstData.lower() == 'true') ) )
+        self.response.out.write('<br/>')
+        self.response.out.write('<br/>Result: ' + str(okey) )
+        self.response.out.write('<br>link: ' + clinic.link )
+
+class RegisterProcessor(webapp.RequestHandler):
+    def get(self):
+        registerKey = self.request.get('key')
 # ------------------------------------------------------------
 
 ROUTES = [
@@ -244,8 +289,10 @@ ROUTES = [
     ('/parse/clinic', ClinicParser),
     ('/parse/dept', DepartmentParser),
     ('/parse/doctor', DoctorParser),
+    ('/tools/register', RegisterProcessor),
     ('/' + apiPrefix + '/dept', DepartmentFetcher ),
     ('/' + apiPrefix + '/doctor', DoctorFetcher),
+    ('/' + apiPrefix + '/register', RegisterChecker),
     ('/', HelloWorld),
 ]
 application = webapp.WSGIApplication( ROUTES, debug = True )

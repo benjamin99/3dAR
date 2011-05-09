@@ -19,4 +19,11 @@ class Clinic( db.Model ):
     doctor = db.ReferenceProperty( Doctor ) 
     dept   = db.ReferenceProperty( Department )
 
-#class Clinic( db.Model ):
+class Register( db.Model ):
+    doc     = db.ReferenceProperty( Doctor )
+    dept    = db.ReferenceProperty( Department )
+    theId   = db.StringProperty()
+    phone   = db.StringProperty()
+    isFirst = db.BooleanProperty( default = False )
+    success = db.BooleanProperty( default = False )
+    

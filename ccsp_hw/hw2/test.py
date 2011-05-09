@@ -5,11 +5,14 @@ from google.appengine.ext import webapp
 from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
+from main import apiPrefix
+
 
 # -----------------------------------------------------------------
 class TestFirstPost(webapp.RequestHandler):   # should return the page for testing
     def get(self):
-        context = {}
+        context = { 'postlink': '/'+apiPrefix+'/register',
+                  }
         path =  os.path.join(os.path.dirname(__file__), 'templates',
                 'firstPost.html')
         
@@ -18,7 +21,8 @@ class TestFirstPost(webapp.RequestHandler):   # should return the page for testi
 
 class TestRePost(webapp.RequestHandler):
     def get(self):
-        context = {}
+        context = { 'postlink': '/'+apiPrefix+'/register',
+                  }
         path =  os.path.join(os.path.dirname(__file__), 'templates',
                 'rePost.html')
         
