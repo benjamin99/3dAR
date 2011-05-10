@@ -250,7 +250,7 @@ class RegisterChecker(webapp.RequestHandler):
         firstData = self.request.get('first')
         phoneData = self.request.get('phone')
         
-        if len(phoneData) == 0:
+        if len(phoneData) == 0 and bool(firstData.lower() == 'true'):
             jsDic = { "status" : "2",  
                       "message": [{"phone":"Phone Number"}],
                     }       
@@ -270,7 +270,7 @@ class RegisterChecker(webapp.RequestHandler):
         else:
             clinic = Clinic.all().filter('doctor =', doc).filter('dept =', dept).filter('date =', timeData).get()
             if not clinic:
-                errorMessage = 'TimeInfoError'
+                errorMessage = 'WrongInfo'
             else:
                 okey = True 
        
@@ -313,9 +313,14 @@ class RegisterProcessor(webapp.RequestHandler):
             return
 
         url = reg.link
+        if reg.isFirst:
+            first = '初診'   
+        else:
+            first = '複診'
+
         vals = {}
-        vals['rblRegFM'] = '初診'
-        vals['txtMRNo'] =  reg.theId
+        vals['rblRegFM'] = first
+        vals['txtMRNo']  = reg.theId
         vals['TextBox1'] = reg.phone
         vals['btnRegNo'] = '掛號'
         vals['__EVENTARGUEMENT'] = ''
