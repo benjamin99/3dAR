@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import re
 import urllib
@@ -257,7 +258,7 @@ class RegisterChecker(webapp.RequestHandler):
             self.response.out.write( simplejson.dumps(jsDic) )
             return 
 
-        # TODO: check for rest values:
+        # Check for rest values:
         doc  = Doctor.all().filter('docCode =', docData ).get()
         dept = Department.all().filter('dptCode =', int(deptData) ).get()
         if not doc:
@@ -292,7 +293,7 @@ class RegisterChecker(webapp.RequestHandler):
                     }
             self.response.headers['Content-Type'] = 'application/json'
             self.response.out.write( simplejson.dumps(jsDic) )
-            return
+        
         #self.response.out.write("TODO: RegisterChecker")
         #self.response.out.write('</br>')
         #self.response.out.write("<br/>doc: " + docData)
@@ -309,8 +310,64 @@ class RegisterProcessor(webapp.RequestHandler):
         reg = db.get(key)
         if not reg:
             self.response.out.write('Error Key')
+            return
+
+        url = reg.link
+        vals = {}
+        vals['rblRegFM'] = '初診'
+        vals['txtMRNo'] =  reg.theId
+        vals['TextBox1'] = reg.phone
+        vals['btnRegNo'] = '掛號'
+        vals['__EVENTARGUEMENT'] = ''
+        vals['__EVENTTARGET'] = ''
+        vals['__VIEWSTATE'] = ''
+
+        cookie = cookielib.CookieJar()
+        opener = urllib2.build_opener( urllib2.HTTPCookieProcessor(cookie))
+
+        #Operation: GET ----------------------'
+        req = urllib2.Request(url)
+        rsp = opener.open(req)
+        soup = BeautifulSoup(rsp)
+
+        qText = soup.find(id='lblQuestion').text
+        if len(qText.split('+')) == 2:
+            A = qText.split('+')[0]
+            B = qText.split('+')[1].split('=')[0]
+            C = int(A) + int(B)
+
+        elif len(qText.split('-')) == 2:
+            A = qText.split('-')[0]
+            B = qText.split('-')[1].split('=')[0]
+            C = int(A) - int(B)
+        
+        vals['txtAnswer'] = str(C)
+        vals['__VIEWSTATE'] = soup.form.find(id='__VIEWSTATE')['value']
+        vals['DoJavaScript1$Hidden4'] = 'true'
+
+        #Operation: POST --------------------'
+        req = urllib2.Request(url, urllib.urlencode(vals) )
+        rsp = opener.open(req)
+
+        soup = BeautifulSoup(rsp)
+        alert = soup.find(id='lblAlert')
+        jsDic = {}
+        if alert:
+            jsDic["status"] = "1"
+            jsDic["message"] = alert.text
+        
         else:
-            self.response.out.write('link: %s' % reg.link)
+            result = soup.find(id='lblRegNo')
+            if result:
+                jsDic["status"] = "0"
+                jsDic["message"] = result.text.split(' ')[1]
+            else:
+                jsDic["status"] = "1"
+                jsDic["message"] =  "UnknowError"
+                        
+         
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write( simplejson.dumps(jsDic) )
 
 # ------------------------------------------------------------
 
