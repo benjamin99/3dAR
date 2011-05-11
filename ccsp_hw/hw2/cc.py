@@ -84,9 +84,22 @@ else:
                 time = 'C'
             
             datetime = year + '-' + month + '-' + day + '-' + time
+            target = script.split('\'')[1].split('\'')[0]
             print datetime
             print docName
+            print script
+            print target
 
         row = row + 1
     
-       
+    vals['__EVENTTARGET'] = target
+    vals['__EVENTVALIDATION'] = soup.find(id='__EVENTVALIDATION')['value']
+    vals['__VIEWSTATE'] = soup.form.find(id='__VIEWSTATE')['value'] 
+    del vals['btnQry']
+
+    req = urllib2.Request(url, urllib.urlencode(vals) )
+    rsp = opener.open(req)
+    soup = BeautifulSoup( rsp )
+    print soup
+
+
