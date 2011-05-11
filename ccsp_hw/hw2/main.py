@@ -392,7 +392,11 @@ class RegisterCanceler(webapp.RequestHandler):
             errorMessage = 'BadDeptId'
         elif not timeData:
             errorMessage = 'MissingTimeInfo'
-        
+        else:
+            clinic = Clinic.all().filter('doctor =', doc).filter('dept =', dept).filter('date =', timeData).get()
+            if not clinic:
+                errorMessage = 'WrongInfo'
+ 
         if errorMessage:
             jsDic = { "status":"1",
                       "message": errorMessage,
@@ -449,9 +453,9 @@ class RegisterCanceler(webapp.RequestHandler):
         rTable = soup.find(id='dgList')
         results = rTable.findAll('tr')
         row = 0
+        target = None
         for one in results:
             if row != 0:
-                #script =  one.find('a')['href']
                 tds = one.findAll('td')
                 col = 0
                 for td in tds:
@@ -462,7 +466,7 @@ class RegisterCanceler(webapp.RequestHandler):
                     elif col == 2:
                         time = td.text
                     elif col == 4:
-                        docName = td.text
+                        docInfo = td.text
                     col = col + 1
             
                 year  = str(int(date[:3]) + 1911)
@@ -477,9 +481,32 @@ class RegisterCanceler(webapp.RequestHandler):
                     time = 'C'
             
                 datetime = year + '-' + month + '-' + day + '-' + time
+                docCode  = docInfo.split('(')[1].split(')')[0].split(' ')[0]
+
+                if doc.docCode == docCode and clinic.date == datetime:
+                    target = script.split('\'')[1].split('\'')[0]
+                    break
+
             row = row + 1
- 
-        self.response.out.write('Cancel')
+
+        if target:
+            vals['__EVENTTARGET'] = target
+            vals['__EVENTVALIDATION'] = soup.find(id='__EVENTVALIDATION')['value']
+            vals['__VIEWSTATE'] = soup.form.find(id='__VIEWSTATE')['value'] 
+            del vals['btnQry']
+
+            req = urllib2.Request(cancelUrl, urllib.urlencode(vals) )
+            rsp = opener.open(req)
+            jsDic = { "status": "0" }
+        
+        else: 
+            jsDic = { "status":"1",
+                      "message": "RecordNotFound",
+                    }
+
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write( simplejson.dumps(jsDic) )
+
 
 # ------------------------------------------------------------
 
@@ -492,7 +519,7 @@ ROUTES = [
     ('/parse/doctor', DoctorParser),
     ('/tools/register', RegisterProcessor),
     ('/' + apiPrefix + '/dept', DepartmentFetcher ),
-    ('/' + apiPrefix + '/doctor', DoctorFetcher),
+   ('/' + apiPrefix + '/doctor', DoctorFetcher),
     ('/' + apiPrefix + '/register', RegisterChecker),
     ('/' + apiPrefix + '/cancel_register', RegisterCanceler),
     ('/', HelloWorld),
