@@ -9,6 +9,16 @@ from main import apiPrefix
 
 
 # -----------------------------------------------------------------
+
+class TestCancel(webapp.RequestHandler):   # should return the page for testing
+    def get(self):
+        context = { 'postlink': '/'+apiPrefix+'/cancel_register',
+                  }
+        path =  os.path.join(os.path.dirname(__file__), 'templates',
+                'firstPost.html')
+        
+        self.response.out.write(template.render(path, context))
+
 class TestFirstPost(webapp.RequestHandler):   # should return the page for testing
     def get(self):
         context = { 'postlink': '/'+apiPrefix+'/register',
@@ -17,7 +27,6 @@ class TestFirstPost(webapp.RequestHandler):   # should return the page for testi
                 'firstPost.html')
         
         self.response.out.write(template.render(path, context))
-
 
 class TestRePost(webapp.RequestHandler):
     def get(self):
@@ -30,6 +39,7 @@ class TestRePost(webapp.RequestHandler):
 
 # -----------------------------------------------------------------
 ROUTES = [
+    ('/test/cancel', TestCancel),
     ('/test/post', TestFirstPost),
     ('/test/repost', TestRePost),
 ]

@@ -58,5 +58,35 @@ else:
     row = 0
     for one in results:
         if row != 0:
-            print one.find('a')['href']
+            #script =  one.find('a')['href']
+            tds = one.findAll('td')
+            col = 0
+            for td in tds:
+                if col == 0:
+                    script = td.find('a')['href']
+                elif col == 1:
+                    date = td.text
+                elif col == 2:
+                    time = td.text
+                elif col == 4:
+                    docName = td.text
+                col = col + 1
+            
+            year  = str(int(date[:3]) + 1911)
+            month = date[3:5]
+            day   = date[5:]
+
+            if time == u'早上':
+                time = 'A'
+            elif time == u'下午':
+                time = 'B'
+            elif time == u'晚上':
+                time = 'C'
+            
+            datetime = year + '-' + month + '-' + day + '-' + time
+            print datetime
+            print docName
+
         row = row + 1
+    
+       

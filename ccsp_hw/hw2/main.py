@@ -19,6 +19,7 @@ apiPrefix = 'tzuhua'
 tzuUrl = 'http://www.tzuchi.com.tw/tzuchi/Family/'
 dptUrl = 'http://www.tzuchi.com.tw/tchw/opdreg/SecList_HL.aspx'
 tzuPrifix = 'http://www.tzuchi.com.tw/tchw/opdreg/'
+cancelUrl = 'http://www.tzuchi.com.tw/tchw/opdreg/RegQryCancel.aspx?Loc=0'
 
 # ------------------------------------------------------------
 class HelloWorld(webapp.RequestHandler):
@@ -374,6 +375,112 @@ class RegisterProcessor(webapp.RequestHandler):
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write( simplejson.dumps(jsDic) )
 
+class RegisterCanceler(webapp.RequestHandler):
+    def post(self):
+        docData  = self.request.get('doctor')
+        deptData = self.request.get('dept')
+        timeData = self.request.get('time') 
+
+        doc  = Doctor.all().filter('docCode =', docData ).get()
+        dept = Department.all().filter('dptCode =', int(deptData) ).get()
+        
+        # Check for post data:
+        errorMessage = None
+        if not doc:
+            errorMessage = 'BadDoctorId'
+        elif not dept:
+            errorMessage = 'BadDeptId'
+        elif not timeData:
+            errorMessage = 'MissingTimeInfo'
+        
+        if errorMessage:
+            jsDic = { "status":"1",
+                      "message": errorMessage,
+                    }
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write( simplejson.dumps(jsDic) )
+            return
+       
+        vals = {}
+        vals['RadioButtonList1'] = '花蓮'
+        vals['txtMRNo'] = 'A123123123'
+        vals['btnQry'] = '查詢'
+        vals['__EVENTARGUEMENT'] = ''
+        vals['__EVENTTARGET'] = ''
+        vals['__VIEWSTATE'] = ''
+
+        cookie = cookielib.CookieJar()
+        opener = urllib2.build_opener( urllib2.HTTPCookieProcessor(cookie))
+      
+        #Operation: GET ----------------------'
+        req = urllib2.Request(cancelUrl)
+        rsp = opener.open(req)
+        soup = BeautifulSoup(rsp)
+
+        qText = soup.find(id='lblQuestion').text
+        if len(qText.split('+')) == 2:
+            A = qText.split('+')[0]
+            B = qText.split('+')[1].split('=')[0]
+            C = int(A) + int(B)
+
+        elif len(qText.split('-')) == 2:
+            A = qText.split('-')[0]
+            B = qText.split('-')[1].split('=')[0]
+            C = int(A) - int(B)
+
+        vals['txtAnswer'] = str(C)
+        vals['__EVENTVALIDATION'] = soup.find(id='__EVENTVALIDATION')['value']
+        vals['__VIEWSTATE'] = soup.form.find(id='__VIEWSTATE')['value']
+
+        #Operation: POST --------------------'
+        req = urllib2.Request(cancelUrl, urllib.urlencode(vals) )
+        rsp = opener.open(req)
+
+        soup = BeautifulSoup(rsp)
+        error = soup.find(id='Label5')
+        if error: # No Registeration
+            jsDic = { "status":"1",
+                      "message": error.text,
+                    }
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write( simplejson.dumps(jsDic) )
+            return
+
+        rTable = soup.find(id='dgList')
+        results = rTable.findAll('tr')
+        row = 0
+        for one in results:
+            if row != 0:
+                #script =  one.find('a')['href']
+                tds = one.findAll('td')
+                col = 0
+                for td in tds:
+                    if col == 0:
+                        script = td.find('a')['href']
+                    elif col == 1:
+                        date = td.text
+                    elif col == 2:
+                        time = td.text
+                    elif col == 4:
+                        docName = td.text
+                    col = col + 1
+            
+                year  = str(int(date[:3]) + 1911)
+                month = date[3:5]
+                day   = date[5:]
+
+                if time == u'早上':
+                    time = 'A'
+                elif time == u'下午':
+                    time = 'B'
+                elif time == u'晚上':
+                    time = 'C'
+            
+                datetime = year + '-' + month + '-' + day + '-' + time
+            row = row + 1
+ 
+        self.response.out.write('Cancel')
+
 # ------------------------------------------------------------
 
 ROUTES = [
@@ -387,6 +494,7 @@ ROUTES = [
     ('/' + apiPrefix + '/dept', DepartmentFetcher ),
     ('/' + apiPrefix + '/doctor', DoctorFetcher),
     ('/' + apiPrefix + '/register', RegisterChecker),
+    ('/' + apiPrefix + '/cancel_register', RegisterCanceler),
     ('/', HelloWorld),
 ]
 application = webapp.WSGIApplication( ROUTES, debug = True )
