@@ -519,7 +519,7 @@ ROUTES = [
     ('/parse/doctor', DoctorParser),
     ('/tools/register', RegisterProcessor),
     ('/' + apiPrefix + '/dept', DepartmentFetcher ),
-   ('/' + apiPrefix + '/doctor', DoctorFetcher),
+    ('/' + apiPrefix + '/doctor', DoctorFetcher),
     ('/' + apiPrefix + '/register', RegisterChecker),
     ('/' + apiPrefix + '/cancel_register', RegisterCanceler),
     ('/', HelloWorld),
