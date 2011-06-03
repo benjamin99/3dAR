@@ -57,27 +57,57 @@ class BaseHandler(webapp.RequestHandler):
                 self._current_user = user
         return self._current_user
 
-
-
-
 # -------------------------------------------------
 class MainHandler(BaseHandler):
     def get(self):
         user = self.current_user
-        path = os.path.join(
+
+	path = os.path.join(
 			os.path.dirname(__file__), 'templates', 
 			'mainJqt.html' )
 
 	self.response.out.write( template.render(path,{  'user':user }) )
 
-class FbLoginHelper(BaseHandler):
+class TagsTestFetcher(BaseHandler):
     def get(self):
-        self.response.out.write('fblogin!')
+        user = self.current_user
+	if user:
+	    userTagsDic = {}
+	    url = 'https://graph.facebook.com/me/photos?access_token=%s' % user.access_token
+	    while True:
+	        req = urllib2.Request( url )
+	        rsp = urllib2.urlopen( req )
+	        rtJson = simplejson.loads(rsp.read()) 
+                
+	        if len(rtJson['data']) == 0:
+	            break;
+                
+		pics = rtJson['data']
+		for pic in pics:
+                    image = pic['picture']
+		    tags = pic['tags']['data']
+		    for tag in tags:
+		        name = tag['name']
+			if tag['id'] == '':
+			   continue
+
+                        if name not in userTagsDic.keys():
+		            userTagsDic[name] = 1
+	                else:
+		            count = int(userTagsDic[name])
+			    userTagsDic[name] = count + 1
+
+	        url = rtJson['paging']['next']
+	    
+            self.response.out.write( simplejson.dumps(userTagsDic) )
+	    return
+        
+        self.response.out.write( 'Needs fbLogin!' )
 
 # -------------------------------------------------
 
 ROUTES = [
-    ('/fblogin', FbLoginHelper),
+    ('/tags', TagsTestFetcher),
     ('/', MainHandler),
 ]
 
