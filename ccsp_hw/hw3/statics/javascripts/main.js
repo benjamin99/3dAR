@@ -29,6 +29,10 @@ function fetchTagsFromFb(url) {
 		message.push( tag.name );
 		message.push('<br>');
 		message.push( tag.count);
+		message.push( '<img src="https://graph.facebook.com/');
+		message.push( tag.id );
+		message.push( '/picture"');
+		message.push('>');
 		message.push('<a>');
 		message.push('</li>');
             });
