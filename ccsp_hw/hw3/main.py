@@ -66,7 +66,7 @@ class MainHandler(BaseHandler):
         user = self.current_user
         path = os.path.join(
 			os.path.dirname(__file__), 'templates', 
-			'baseJqt.html' )
+			'mainJqt.html' )
 
 	self.response.out.write( template.render(path,{  'user':user }) )
 

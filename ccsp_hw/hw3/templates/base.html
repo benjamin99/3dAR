@@ -12,6 +12,33 @@
         
     </head>
     <body>
+        {% block rest_body %}
+        <div id="header">
+            {% block header %}
+            <a>MyFriendsTag</a><br>
+	    <!-- handle fb-login -->
+                {% if user %}
+		     <a id="linker" href='/#' onclick="return FB.logout( function(response) { window.location='/' });">登出</a>
+                {% else %}
+		     <a id="linker" href='/#' onclick="return FBlogin();">LOGIN</a>
+                {% endif %}
+            {% endblock %}
+        </div><!-- End of header -->
+        <p>
+        
+        <div id="main-container">
+            {% block main_container %}
+            {% endblock %}
+        </div><!-- End of main-container -->
+        <p>
+        
+        <div id="footer">
+            {% block footer %}
+            {% endblock %}
+        </div><!-- End of footer -->
+        {% endblock %}
+
+
        	<!-- the block for FB sdk -->
 	{% block fbinit %}
 	<div id="fb-root"></div>
@@ -38,30 +65,7 @@
 	     }());
 	</script>
 	{% endblock %}
-	
-        <div id="header">
-            {% block header %}
-            <a>MyFriendsTag</a><br>
-	    <!-- handle fb-login -->
-                {% if user %}
-		     <a id="linker" href='/#' onclick="return FB.logout( function(response) { window.location='/' });">登出</a>
-                {% else %}
-		     <a id="linker" href='/#' onclick="return FBlogin();">LOGIN</a>
-                {% endif %}
-            {% endblock %}
-        </div><!-- End of header -->
-        <p>
-        
-        <div id="main-container">
-            {% block main_container %}
-            {% endblock %}
-        </div><!-- End of main-container -->
-        <p>
-        
-        <div id="footer">
-            {% block footer %}
-            {% endblock %}
-        </div><!-- End of footer -->
-        
+
+
     </body>
 </html>
