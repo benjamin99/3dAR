@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block main_container %}
+    {% if user %}
+       Hello, {{user.name}} !
+    {% endif %}
+
+{% endblock %}
+

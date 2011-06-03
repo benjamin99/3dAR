@@ -1,0 +1,67 @@
+<html>
+    <head>
+        <!-- The block for css -->
+        {% block css %}
+        {% endblock %}
+        <!-- The block for javascript -->
+        {% block javascript %}
+        {% endblock %}
+        
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <title>{% block title %} MyFriendsTags {% endblock %}</title>
+        
+    </head>
+    <body>
+       	<!-- the block for FB sdk -->
+	{% block fbinit %}
+	<div id="fb-root"></div>
+	<script>
+	    window.fbAsyncInit = function() {
+		FB.init({appId: '119095881507748', status: true, cookie: true, xfbml: true});
+	    };
+	    <!-- function for FBlogin --> 
+	    function FBlogin() {
+	        FB.login(function(response) {
+		    if (response.session) {
+		        window.location="/"
+		    } else {
+		    }
+		}, 
+		{perms:'publish_stream, user_photo_video_tags, friends_photo_video_tags'});
+	   };
+	   ( function() {
+	       var e = document.createElement('script');
+	       e.type = 'text/javascript';
+	       e.src = document.location.protocol + '//connect.facebook.net/en_US/all.js';
+               e.async = true;
+	       document.getElementById('fb-root').appendChild(e);
+	     }());
+	</script>
+	{% endblock %}
+	
+        <div id="header">
+            {% block header %}
+            <a>MyFriendsTag</a><br>
+	    <!-- handle fb-login -->
+                {% if user %}
+		     <a id="linker" href='/#' onclick="return FB.logout( function(response) { window.location='/' });">登出</a>
+                {% else %}
+		     <a id="linker" href='/#' onclick="return FBlogin();">LOGIN</a>
+                {% endif %}
+            {% endblock %}
+        </div><!-- End of header -->
+        <p>
+        
+        <div id="main-container">
+            {% block main_container %}
+            {% endblock %}
+        </div><!-- End of main-container -->
+        <p>
+        
+        <div id="footer">
+            {% block footer %}
+            {% endblock %}
+        </div><!-- End of footer -->
+        
+    </body>
+</html>

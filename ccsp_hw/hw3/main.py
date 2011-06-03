@@ -63,12 +63,12 @@ class BaseHandler(webapp.RequestHandler):
 # -------------------------------------------------
 class MainHandler(BaseHandler):
     def get(self):
-	if not self.current_user:
-	    self.redirect('/fblogin')
-	    return
+        user = self.current_user
+        path = os.path.join(
+			os.path.dirname(__file__), 'templates', 
+			'main.html' )
 
-	self.response.out.write('Hello!')
-        self.response.out.write(self.current_user.name)
+	self.response.out.write( template.render(path,{  'user':user }) )
 
 class FbLoginHelper(BaseHandler):
     def get(self):
