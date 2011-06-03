@@ -1,5 +1,10 @@
 {% extends "baseJqt.html" %}
 
+
+{% block otherscripts %}
+    <script type="text/javascript" src="/statics/javascripts/main.js"></script>
+{% endblock %}
+
 {% block rest_body %}
     <!-- "Page 1" -->
     <div id="list">
@@ -13,10 +18,10 @@
                 {% endif %}
  
 	</div>
-        <ul class="rounded">
+        <ul class="rounded" id='start' >
             <li> My Friends</li>
 	    <li>
-	        <a href="#friend">Go to view 2
+	        <a href="#" onclick="window.location='/tags'">Go to view 2
 	          <br>
 		TEst</a>
 	    </li>
