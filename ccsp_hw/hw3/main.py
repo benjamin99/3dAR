@@ -73,6 +73,7 @@ class TagsTestFetcher(BaseHandler):
         user = self.current_user
 	if user:
 	    userTagsDic = {}
+	    userNameDic = {}
 	    url = 'https://graph.facebook.com/me/photos?access_token=%s' % user.access_token
 	    while True:
 	        req = urllib2.Request( url )
@@ -87,19 +88,29 @@ class TagsTestFetcher(BaseHandler):
                     image = pic['picture']
 		    tags = pic['tags']['data']
 		    for tag in tags:
-		        name = tag['name']
-			if tag['id'] == '':
+                        name = tag['name']
+			uid  = tag['id']
+			if uid == '' or uid == user.id:
 			   continue
 
-                        if name not in userTagsDic.keys():
-		            userTagsDic[name] = 1
+                        if uid not in userTagsDic.keys():
+		            userTagsDic[uid] = 1
+			    userNameDic[uid] = name
 	                else:
-		            count = int(userTagsDic[name])
-			    userTagsDic[name] = count + 1
+		            count = int(userTagsDic[uid])
+			    userTagsDic[uid] = count + 1
 
 	        url = rtJson['paging']['next']
-	    
-            self.response.out.write( simplejson.dumps(userTagsDic) )
+	   
+            # sorting by the tag count:
+	    rspData = [];
+            userTags = userTagsDic.items()
+	    userTags.sort(key=lambda x: x[1], reverse=True)
+            for one in userTags:
+	        uid = one[0]
+	        rspData.append( { 'id':uid, 'name':userNameDic[uid], 'count':one[1] } )
+
+            self.response.out.write( simplejson.dumps(rspData) )
 	    return
         
         self.response.out.write( 'Needs fbLogin!' )
