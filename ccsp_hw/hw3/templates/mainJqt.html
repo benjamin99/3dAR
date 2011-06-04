@@ -7,21 +7,21 @@
 
 {% block rest_body %}
     <!-- "Page 1" -->
-    <div id="list">
+    <div id="main">
         <div class="toolbar">
 	    <h1>My Friends Tags</h1>
 	    <!-- handle fb-login -->
                 {% if user %}
-		     <a id="linker" href='/#' onclick="return FB.logout( function(response) { window.location='/' });">登出</a>
+		     <a id="linker" href='#' onclick="return FB.logout( function(response) { window.location='/' });">登出</a>
                 {% else %}
-		     <a id="linker" href='/#' onclick="return FBlogin();">LOGIN</a>
+		     <a id="linker" href='#' onclick="return FBlogin();">LOGIN</a>
                 {% endif %}
  
 	</div>
         <ul class="rounded" id='start' >
             <li> My Friends</li>
 	    <li>
-	        <a href="#" onclick="window.location='/tags'">Go to view 2
+	        <a href="#friend" >Go to view 2
 	          <br>
 		TEst</a>
 	    </li>
@@ -31,7 +31,7 @@
     <div id="friend">
         <div class="toolbar">
 	    <h1>Results</h1>
-            <a class="button back" href="#">Back</a>
+            <a class="button back" href="#main">Back</a>
         </div>
         <ul id="results_ul" class="rounded">
             <li>This is page 2</li>

@@ -1,5 +1,6 @@
 ids = [];
 var tagsObj = new Object();
+var imgsObj = new Object(); 
 
 window.onload = function() {
     var url = '/me/photos';
@@ -12,6 +13,13 @@ function fetchTagsFromFb(url) {
 	if(response.paging) {
 	    picArray = response.data;
 	    $.each( picArray, function(index, pic){
+                //Handle sources and pictures:
+		var tmpObj = new Object();
+                tmpObj['source'] = pic.source;
+		tmpObj['thumb'] = pic.picture;
+		imgsObj[ pic.id ] = tmpObj;
+
+		//Handle tags:
                 tagArray = pic.tags.data;
 		var pid = pic.id;
 		$.each( tagArray, function(index, tag){
@@ -37,10 +45,7 @@ function fetchTagsFromFb(url) {
 		message.push( tag.name );
 		message.push('<br>');
 		message.push( tag.count);
-		message.push( '<img src="https://graph.facebook.com/');
-		message.push( tag.id );
-		message.push( '/picture"');
-		message.push('>');
+		message.push( '<img src="https://graph.facebook.com/' + tag.id + '/picture">');
 		message.push('<a>');
 		message.push('</li>');
             });
@@ -80,20 +85,26 @@ function appendAndGotoFriendPage( fid ) {
         newdiv.push('">');
         newdiv.push('<div class="toolbar">');
         newdiv.push('    <h1> Friend </h1>');
-        newdiv.push('    <a class="button back" href="#list">BACK</a>');
+        newdiv.push('    <a class="button back" href="#main">Back</a>');
         newdiv.push('</div>');
 	newdiv.push('<ul class="rounded" id="photos">');
 	
 	var photoList = tagsObj[fid]['pics'];
 	if(photoList.length > 0) {
 	    $.each( photoList, function( index, pid ){  
-	        newdiv.push( '<li>' + pid + '</li>');
+	        newdiv.push('<li>');
+		var from = '#fid_' + fid;
+		newdiv.push('<a href="#" onclick="return appendAndGotoPhotoPage('+ pid +', \'' + from + '\');">');
+                newdiv.push('<img src="' + imgsObj[pid]['thumb'] + '">'); 
+		newdiv.push('</a>');
+	        newdiv.push( '</li>');
 	    });
 	}
 
 	newdiv.push('</ul>');
         newdiv.push('</div>'); 
         $('body').append( newdiv.join("") );
+
     }
     jQT.goTo( '#fid_' + fid, 'flip');
 }
@@ -103,13 +114,15 @@ function appendAndGotoPhotoPage( pid, from ) {
     if( $( '#pid_' + pid ).length == 0) {
         var newdiv = [];
         newdiv.push('<div id="pid_');
-        newdiv.push( fid );
+        newdiv.push( pid );
         newdiv.push('">');
         newdiv.push('<div class="toolbar">');
         newdiv.push('    <h1> Photo </h1>');
-        newdiv.push('    <a class="button back" href="'+ from + '#list">BACK</a>');
+        newdiv.push('    <a class="button back" href="'+ from + '">BACK</a>');
         newdiv.push('</div>');
-        
+        newdiv.push('<ul class="rounded">');
+	newdiv.push('<li> <img src="'+ imgsObj[pid]['source'] + '"> </li>');
+	newdiv.push('</ul>');
         $('body').append( newdiv.join("") );
     
     }

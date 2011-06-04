@@ -66,7 +66,7 @@ class MainHandler(BaseHandler):
 			os.path.dirname(__file__), 'templates', 
 			'mainJqt.html' )
 
-	self.response.out.write( template.render(path,{  'user':user }) )
+	self.response.out.write( template.render(path,{ 'user':user }) )
 
 class TagsTestFetcher(BaseHandler):
     def get(self):
