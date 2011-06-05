@@ -460,9 +460,9 @@
                     }
                 });
             }
-            else if ($referrer)
+            else if (settings.$referrer)
             {
-                $referrer.unselect();
+                settings.$referrer.unselect();
             }
         }
         function submitForm(e, callback){

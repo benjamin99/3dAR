@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from google.appengine.ext import db
 from google.appengine.ext import blobstore
 from google.appengine.api.users import User
