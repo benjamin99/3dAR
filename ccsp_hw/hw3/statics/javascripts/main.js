@@ -39,7 +39,7 @@ function fetchTagsFromFb(url) {
 
 	    var message = [];
 	    $.each( tags, function(index, tag) {
-		message.push('<li>');
+		message.push('<li class="arrow">');
 		message.push('<a href="#" onclick="return appendAndGotoFriendPage(');
 	        message.push( tag.id + ');">');
 		message.push( tag.name );
@@ -92,7 +92,7 @@ function appendAndGotoFriendPage( fid ) {
 	var photoList = tagsObj[fid]['pics'];
 	if(photoList.length > 0) {
 	    $.each( photoList, function( index, pid ){  
-	        newdiv.push('<li>');
+	        newdiv.push('<li class="arrow">');
 		var from = '#fid_' + fid;
 		newdiv.push('<a href="#" onclick="return appendAndGotoPhotoPage('+ pid +', \'' + from + '\');">');
                 newdiv.push('<img src="' + imgsObj[pid]['thumb'] + '">'); 
@@ -118,7 +118,7 @@ function appendAndGotoPhotoPage( pid, from ) {
         newdiv.push('">');
         newdiv.push('<div class="toolbar">');
         newdiv.push('    <h1> Photo </h1>');
-        newdiv.push('    <a class="button back" href="'+ from + '">BACK</a>');
+        newdiv.push('    <a class="button back" href="'+ from + '">Back</a>');
         newdiv.push('</div>');
         newdiv.push('<ul class="rounded">');
 	newdiv.push('<li> <img src="'+ imgsObj[pid]['source'] + '"> </li>');
@@ -127,4 +127,25 @@ function appendAndGotoPhotoPage( pid, from ) {
     
     }
     jQT.goTo( '#pid_' + pid, 'flip' );
+}
+
+
+// Sharing methods:
+function shareOnFb() {
+    FB.ui(
+   {
+     method: 'feed',
+     name: 'Facebook Dialogs',
+     display: 'popup',
+     caption: 'MyFriendsTags is amazing!',
+     message: 'Try this one!'
+   },
+   function(response) {
+     if (response && response.post_id) {
+       //alert('Post was published.');
+     } else {
+       //alert('Post was not published.');
+     }
+   }
+ );
 }

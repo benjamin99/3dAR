@@ -10,6 +10,7 @@
     <div id="main">
         <div class="toolbar">
 	    <h1>My Friends Tags</h1>
+            <a class="button" href='#' onclick='return shareOnFb();'>Share</a>
 	    <!-- handle fb-login -->
                 {% if user %}
 		     <a id="linker" href='#' onclick="return FB.logout( function(response) { window.location='/' });">登出</a>
@@ -20,14 +21,10 @@
 	</div>
         <ul class="rounded" id='start' >
             <li> My Friends</li>
-	    <li>
-	        <a href="#friend" >Go to view 2
-	          <br>
-		TEst</a>
-	    </li>
         </ul>
+
     </div>
-    <!-- "Page 2" - Will contain the tweets found -->
+    <!-- "Page 2" - Will contain the tweets found 
     <div id="friend">
         <div class="toolbar">
 	    <h1>Results</h1>
@@ -36,7 +33,7 @@
         <ul id="results_ul" class="rounded">
             <li>This is page 2</li>
         </ul>
-    </div>
+    </div> -->
 
 
 {% endblock %}
